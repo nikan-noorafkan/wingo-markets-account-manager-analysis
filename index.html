@@ -790,15 +790,26 @@ function renderMomDeltaTable() {
   const mgrDelta = DATA.mom_delta.filter(r => r.Manager === selectedManager && months.includes(r.AssignMonth)).sort((a,b) => a.AssignMonth.localeCompare(b.AssignMonth));
   function deltaClass(v) { return v > 0 ? 'delta-pos' : v < 0 ? 'delta-neg' : 'delta-zero'; }
   function deltaSign(v) { return v > 0 ? '+' : ''; }
-  let html = '<table><thead><tr><th>Month</th><th>Depositors</th><th>Δ Depositors</th><th>Gross Dep</th><th>MoM% Change</th><th>Dep Rate</th><th>Δ Rate pts</th><th>NRR%</th></tr></thead><tbody>';
-  mgrDelta.forEach(r => {
+  const enriched = mgrDelta.map((r, i) => {
+    let depRatePts = r.MoM_DepRate_pts;
+    if (depRatePts == null && i > 0) {
+      const prev = mgrDelta[i - 1];
+      if (r['DepositRate_%'] != null && prev['DepositRate_%'] != null) {
+        depRatePts = r['DepositRate_%'] - prev['DepositRate_%'];
+      }
+    }
+    return { ...r, _depRatePts: depRatePts };
+  });
+  let html = '<table><thead><tr><th>Month</th><th>Monthly Total Clients</th><th>Depositors</th><th>Δ Depositors</th><th>Gross Dep</th><th>MoM% Change</th><th>Dep Rate</th><th>Δ Rate pts</th><th>NRR%</th></tr></thead><tbody>';
+  enriched.forEach(r => {
     html += '<tr><td>' + r.AssignMonth + '</td>' +
+      '<td>' + (r.TotalAssigned != null ? r.TotalAssigned.toLocaleString() : '—') + '</td>' +
       '<td>' + r.Depositors + '</td>' +
       '<td class="' + deltaClass(r.MoM_Depositors) + '">' + (r.MoM_Depositors != null ? deltaSign(r.MoM_Depositors) + r.MoM_Depositors : '—') + '</td>' +
       '<td>' + fmtUSD(r.GrossDepUSD) + '</td>' +
       '<td class="' + deltaClass(r['MoM_GrossDep_%']) + '">' + (r['MoM_GrossDep_%'] != null ? deltaSign(r['MoM_GrossDep_%']) + r['MoM_GrossDep_%'].toFixed(1) + '%' : '—') + '</td>' +
       '<td>' + (r['DepositRate_%'] != null ? r['DepositRate_%'].toFixed(1) + '%' : '—') + '</td>' +
-      '<td class="' + deltaClass(r.MoM_DepRate_pts) + '">' + (r.MoM_DepRate_pts != null ? deltaSign(r.MoM_DepRate_pts) + r.MoM_DepRate_pts.toFixed(1) + ' pts' : '—') + '</td>' +
+      '<td class="' + deltaClass(r._depRatePts) + '">' + (r._depRatePts != null ? deltaSign(r._depRatePts) + r._depRatePts.toFixed(1) + ' pts' : '—') + '</td>' +
       '<td>' + (r['NRR_%'] != null ? r['NRR_%'].toFixed(1) + '%' : '—') + '</td></tr>';
   });
   html += '</tbody></table>';

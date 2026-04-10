@@ -1048,7 +1048,8 @@ function renderRevenueKpis() {
   const avgNRR = sc.length ? sc.reduce((s,r) => s + r['NRR_%'], 0) / sc.length : 0;
   const totalWithdrawals = sc.reduce((s,r) => s + Math.abs(r.TotalWithdrawals), 0);
   const totalNet = sc.reduce((s,r) => s + r.NetDepUSD, 0);
-  const avgCapRet = totalFTD > 0 ? (totalNet / totalFTD * 100) : 0;
+  const totalDeposits = sc.reduce((s, r) => s + r.NetDepUSD + Math.abs(r.TotalWithdrawals), 0);
+  const avgCapRet = totalNet > 0 ? (totalDeposits / totalNet * 100) : 0;
   const kpis = [
     { label: 'Total Total FTD USD', value: totalFTD, prefix: '$', suffix: '', color: 'var(--teal)' },
     { label: 'Total Broker Rev Proxy', value: totalBrokerRev, prefix: '$', suffix: '', color: 'var(--green)' },
@@ -1583,7 +1584,7 @@ function renderGlossary() {
         { name: 'FundingDepthRatio %', formula: '(SUM NetDepositsUSD / SUM ClientFirstDepUSD) × 100', definition: 'Net Revenue Retention — ratio of net deposits to FTD first deposits.', why: '>100% means capital is growing (clients adding more than withdrawing). <100% means capital flight.', benchmark: 'Team range 91-273%. Above 100% is healthy. Karen Amini leads at 273.1%.' },
         { name: 'Broker Revenue Proxy', formula: 'SUM(ClientFirstDepUSD) - SUM(WithdrawalsUSD)', definition: 'Estimate of capital base available for generating trading revenue.', why: 'Capital base that generates broker commission/spread revenue. Higher = more revenue potential.', benchmark: 'Range $24k (Niki) to $4.4M (Sara Raad).' },
         { name: 'Withdrawal Pressure %', formula: 'ABS(SUM WithdrawalsUSD) / SUM ClientFirstDepUSD × 100', definition: 'Ratio of total withdrawals to Total FTD USD.', why: 'Early warning for capital flight. Sustained high pressure indicates dissatisfied clients.', benchmark: '<30% Healthy (green), 30-60% Medium risk (orange), ≥60% High risk (red).' },
-        { name: 'Capital Retention %', formula: 'SUM(NetDepositsUSD) / SUM(ClientFirstDepUSD) × 100', definition: 'Percentage of initial capital that remains on platform.', why: 'Directly measures how well a manager retains client capital over time.', benchmark: '>100% ideal. <80% warrants review.' },
+        { name: 'Capital Retention %', formula: 'SUM(DepositsUSD) / (SUM(DepositsUSD) − SUM(WithdrawalsUSD)) × 100', definition: 'Ratio of total deposits to net retained capital (deposits minus withdrawals).', why: 'Measures what portion of total deposited capital is still retained on platform. Values >100% indicate capital erosion; 100% means all deposits are retained.', benchmark: '>100% ideal. <80% warrants review.' },
         { name: 'PNL Drag %', formula: 'SUM(TotalPNLUSD) / SUM(ClientFirstDepUSD) × 100', definition: 'Trading losses as a percentage of Total FTD USD.', why: 'Shows how much client capital is eroded by trading losses vs. withdrawals.', benchmark: 'Lower is better. High PNL drag may indicate clients need risk management guidance.' },
         { name: 'Full Exit Rate %', formula: 'COUNT(NetDepositsUSD ≤ 0) / COUNT(HasDeposit = TRUE) × 100', definition: 'Percentage of depositors who withdrew all their capital.', why: 'Ultimate churn signal. Full exits mean complete client loss.', benchmark: '<10% is good. >20% is a red flag.' },
       ]

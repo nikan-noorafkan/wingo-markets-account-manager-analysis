@@ -1591,10 +1591,20 @@ function renderGlossary() {
     },
     {
       title: 'Attribution & Credit Metrics',
-      metrics: [
-        { name: 'FD Attribution Match %', formula: 'COUNT(Own Conversion) / COUNT(HasDeposit = TRUE) × 100', definition: 'Percentage of deposits attributed directly to the assigned manager\'s own conversion efforts.', why: 'Tracks credit attribution — whether deposits came from the manager\'s direct work or were inherited/passed through.', benchmark: 'Higher = more direct influence. Inherited deposits still count but indicate different skill.' },
-      ]
-    },
+  metrics: [
+    { name: 'FD Attribution Match %', formula: 'COUNT(Own Conversion) / COUNT(HasDeposit = TRUE) × 100', definition: 'Percentage of deposits attributed directly to the assigned manager\'s own conversion efforts.', why: 'Tracks credit attribution — whether deposits came from the manager\'s direct work or were inherited/passed through.', benchmark: 'Higher = more direct influence. Inherited deposits still count but indicate different skill.' },
+    { name: 'Attribution Flow Logic', formula: '—', definition: 'Defines how credit is assigned based on the path a lead took from first contact to final deposit manager.', why: 'Clarifies ownership ambiguity when a lead passes through multiple managers before depositing.', benchmark: 'Full Owner = highest quality attribution. Inherited Retained = good retention. Fully Passed Through = no credit.',
+      table: {
+        headers: ['Attribution Flow', 'First Deposit Manager', 'Last Deposit Manager', 'Meaning'],
+        rows: [
+          ['Full Owner',           'Same manager',                'Same manager',      'Converted and retained by the same person'],
+          ['Inherited, Retained',  'Different manager',           'Current manager',   'Inherited from someone else, but retained now'],
+          ['Fully Passed Through', 'This manager earlier in path','Different manager', 'Did not keep final ownership'],
+        ]
+      }
+    },       
+  ]
+},
     {
       title: 'Lead Quality & Recovery Metrics',
       metrics: [
@@ -1619,6 +1629,7 @@ function renderGlossary() {
         '<div class="def-row"><span class="def-label">Formula</span><span class="def-value" style="font-family:monospace;font-size:12px;color:var(--teal)">' + m.formula + '</span></div>' +
         '<div class="def-row"><span class="def-label">Why it matters</span><span class="def-value">' + m.why + '</span></div>' +
         '<div class="def-row"><span class="def-label">Benchmarks</span><span class="def-value">' + m.benchmark + '</span></div>' +
+        (m.table ? '<div style="margin-top:12px;overflow-x:auto"><table style="width:100%;font-size:12px;border-collapse:collapse"><thead><tr>' + m.table.headers.map(h => '<th style="padding:7px 10px;text-align:left;background:var(--surface2);border:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">' + h + '</th>').join('') + '</tr></thead><tbody>' + m.table.rows.map((row,ri) => '<tr style="background:' + (ri%2===0?'transparent':'var(--surface2)') + '">' + row.map((cell,ci) => '<td style="padding:7px 10px;border:1px solid var(--border);color:' + (ci===0?'var(--teal)':ci===3?'var(--muted)':'var(--text)') + ';font-weight:' + (ci===0?'600':'400') + '">' + cell + '</td>').join('') + '</tr>').join('') + '</tbody></table></div>' : '') +
         '</div>';
     });
     html += '</div></div>';

@@ -809,8 +809,10 @@ function renderMomDeltaTable() {
     }
     return { ...r, _depRatePts: depRatePts };
   });
-  let html = '<table><thead><tr><th>Month</th><th>Monthly Total Clients</th><th>Depositors</th><th>Δ Depositors</th><th>FTD Dep</th><th>MoM% Change</th><th>Dep Rate</th><th>Δ Rate pts</th><th>FundingDepthRatio%</th></tr></thead><tbody>';
-  enriched.forEach(r => {
+  let html = '<table><thead><tr><th>Month</th><th>Monthly Total Clients</th><th>Depositors</th><th>Δ Depositors</th><th>FTD Dep</th><th>MoM% Change</th><th>Dep Rate</th><th>Δ Rate pts</th><th>Withdrawals</th><th>Δ Withdrawals</th><th>FundingDepthRatio%</th></tr></thead><tbody>';
+  enriched.forEach((r, i) => {
+    const prevW = i > 0 ? enriched[i - 1].TotalWithdrawals : null;
+    const wDelta = (r.TotalWithdrawals != null && prevW != null) ? r.TotalWithdrawals - prevW : null;
     html += '<tr><td>' + r.AssignMonth + '</td>' +
       '<td>' + (r.TotalAssigned != null ? r.TotalAssigned.toLocaleString() : '—') + '</td>' +
       '<td>' + r.Depositors + '</td>' +
@@ -819,8 +821,10 @@ function renderMomDeltaTable() {
       '<td class="' + deltaClass(r['MoM_FTDDep_%']) + '">' + (r['MoM_FTDDep_%'] != null ? deltaSign(r['MoM_FTDDep_%']) + r['MoM_FTDDep_%'].toFixed(1) + '%' : '—') + '</td>' +
       '<td>' + (r['DepositRate_%'] != null ? r['DepositRate_%'].toFixed(1) + '%' : '—') + '</td>' +
       '<td class="' + deltaClass(r._depRatePts) + '">' + (r._depRatePts != null ? deltaSign(r._depRatePts) + r._depRatePts.toFixed(1) + ' pts' : '—') + '</td>' +
+      '<td>' + (r.TotalWithdrawals != null ? fmtUSD(r.TotalWithdrawals) : '—') + '</td>' +
+      '<td class="' + deltaClass(wDelta) + '">' + (wDelta != null ? deltaSign(wDelta) + fmtUSD(wDelta) : '—') + '</td>' +
       '<td>' + (r['NRR_%'] != null ? r['NRR_%'].toFixed(1) + '%' : '—') + '</td></tr>';
-  });
+});
   html += '</tbody></table>';
   document.getElementById('momDeltaWrap').innerHTML = html;
 }
